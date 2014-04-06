@@ -1,27 +1,37 @@
 package com.enable.navigator;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 import com.enable.dsp.filters.ContinuousConvolution;
 import com.enable.dsp.filters.FrequencyCounter;
 import com.enable.dsp.filters.SinXPiWindow;
+import com.enable.navigator.WifiDemo.WifiReceiver;
 import com.enable.service.stepdetector.MovingAverageStepDetector;
-import com.enable.service.stepdetector.MovingAverageStepDetector.MovingAverageStepDetectorState;
 import com.enable.service.stepdetector.StrideLengthEstimator;
+import com.enable.service.stepdetector.MovingAverageStepDetector.MovingAverageStepDetectorState;
 
 import android.app.Activity;
-import android.graphics.Color;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.net.wifi.ScanResult;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.TextView;
 
-public class StepLog extends Activity implements SensorEventListener {
+public class Navigate extends Activity implements SensorEventListener {
 	/** Tag string for our debug logs */
 	private static final String TAG = "Sensors";
-	private static final String TAG2 = "SensorLog";
+	private static final String TAG2 = "Navigate";
 
+	private Node root;
 	private SensorManager mSensorManager;
 	private Sensor mAccelerometer;
 	private Sensor mGeomagnetic;
@@ -29,10 +39,12 @@ public class StepLog extends Activity implements SensorEventListener {
 	private StrideLengthEstimator mStrideEstimator;
 	private ContinuousConvolution mCC;
 	private FrequencyCounter freqCounter;
+	WifiManager mainWifi;
+    WifiReceiver receiverWifi;
+    List<ScanResult> wifiList;
 	private int mMASize = 20;
 	private float mSpeed = 1f;
 	float mConvolution;
-	private TextView textView;
 	final float alpha = (float) 0.8;
 	float[] gravity = new float[3];
     float[] orientation = new float[3];
@@ -40,6 +52,9 @@ public class StepLog extends Activity implements SensorEventListener {
     float[] rotation_matrix = new float[9];
     float[] inclination_matrix = new float[9];
     private float direction;
+    int stepCount = 0;
+    private List<Node> nodeList;
+    Boolean wifiTriggered = true;
 
 	private Sensor getSensor(int sensorType, String sensorName) {
 
@@ -86,26 +101,51 @@ public class StepLog extends Activity implements SensorEventListener {
 	
 	private void displayStepDetectorState(
 			MovingAverageStepDetectorState state) {
+		//TODO when receive a step detection
 		
 		boolean stepDetected = false;
 		boolean signalPowerCutoff = true;
-		Double strideDuration = 0.0;
-		Double strideLength = 0.7;
-		
-		textView = (TextView) findViewById(R.id.textView1);
+		double strideDuration = 0.0;
+		double strideLength = 0.7;
+		double nodeDistance = 0;
+		double newX, newY, min=2.0;
+		Node newNode = null;
 		
 		stepDetected = state.states[0];
 		signalPowerCutoff = state.states[1];
-		Log.d(TAG2, "Coming "+stepDetected);
 		
 		if (stepDetected){
-			if (signalPowerCutoff) {
-				textView.setText("Lower threshold step detected.");
-			} else {
+			stepCount += 1;
+			if (stepCount>=3 && wifiTriggered==true){
+				mainWifi.startScan();
+				stepCount = 0;
+				wifiTriggered = false;
+			}
+			
+			if (signalPowerCutoff == false) {
+				Log.d(TAG2, "Step Event triggered.");
 				strideDuration = state.duration;
 				strideLength = mStrideEstimator.getStrideLengthFromDuration(strideDuration);
 				
-				textView.setText("Step Detected with duration "+strideDuration+" seconds and length "+strideLength+" meters in "+Double.toString(Math.round(Math.toDegrees(direction)))+" degrees to the North." );
+				newX = root.x + strideLength*Math.sin(direction);
+				newY = root.y + strideLength*Math.cos(direction);
+				Set<Integer> nodes = root.getNodes(6);
+				min = 2.0;
+				for (int i=0; i<nodes.size(); i++)	{
+					if (nodeList.get(i).exists)	{
+						nodeDistance = nodeList.get(i).getCoordinateDistance(newX, newY);
+						if (nodeDistance < min){
+							min = nodeDistance;
+							newNode = nodeList.get(i);
+						}
+					}
+				}
+				if (newNode != null)	{
+					root.active = false;
+					newNode.active = true;
+					root = newNode;
+					Log.d(TAG2, "Root node changed.");
+				}
 			}
 			
 		}
@@ -124,6 +164,10 @@ public class StepLog extends Activity implements SensorEventListener {
 		// Be sure to call the super class.
 		super.onCreate(savedInstanceState);
 
+		root = new Node();
+		nodeList = new ArrayList<Node>();
+		nodeList.add(root);
+		
 		mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 		mAccelerometer = getSensor(Sensor.TYPE_ACCELEROMETER, "accelerometer");
 		mGeomagnetic = getSensor(Sensor.TYPE_MAGNETIC_FIELD, "magnetometer");
@@ -138,10 +182,22 @@ public class StepLog extends Activity implements SensorEventListener {
 		mCC = new ContinuousConvolution(new SinXPiWindow(mMASize));
 		freqCounter = new FrequencyCounter(20);
 		
-		setContentView(R.layout.activity_steplog);
+		mainWifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+	    receiverWifi = new WifiReceiver();
+	    registerReceiver(receiverWifi, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+	       
+		//setContentView(R.layout.activity_steplog);
 	}
 
-
+    
+    class WifiReceiver extends BroadcastReceiver {
+        public void onReceive(Context c, Intent intent) {
+            //TODO when receive a wifi scan Result
+        	wifiTriggered = true;
+        	Log.d(TAG2, "Wifi Event triggered.");
+        }
+    }
+    
 	@Override
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {
 		// TODO Auto-generated method stub
@@ -159,12 +215,15 @@ public class StepLog extends Activity implements SensorEventListener {
 		if (mGeomagnetic != null)
 			mSensorManager.registerListener(this, mGeomagnetic, 
 					SensorManager.SENSOR_DELAY_FASTEST);
+		
+		registerReceiver(receiverWifi, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
 	}
 	
 	@Override
 	protected void onPause() {
     	super.onPause();
     	
+    	unregisterReceiver(receiverWifi);
   	  	mSensorManager.unregisterListener(this, mAccelerometer);
   	  	mSensorManager.unregisterListener(this, mGeomagnetic);
 	}

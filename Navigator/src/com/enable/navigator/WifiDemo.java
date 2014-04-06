@@ -62,7 +62,7 @@ public class WifiDemo extends Activity implements OnClickListener{
             sb = new StringBuilder();
             wifiList = mainWifi.getScanResults();
             for(int i = 0; i < wifiList.size(); i++){
-                sb.append(wifiList.get(i).BSSID+": "+wifiList.get(i).SSID+": "+wifiList.get(i).level+"\n");
+                sb.append(wifiList.get(i).SSID+": "+wifiList.get(i).level+"\n");
             }
             mainText.setText(sb);
         }

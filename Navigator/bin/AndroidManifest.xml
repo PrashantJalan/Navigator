@@ -45,6 +45,10 @@
             android:label="@string/app_name"
             android:name="com.enable.navigator.WifiDemo" >
         </activity>
+        <activity
+            android:label="@string/app_name"
+            android:name="com.enable.navigator.Navigate" >
+        </activity>
     </application>
 
 </manifest>

@@ -198,7 +198,7 @@ public class StepDetection extends Activity {
 
 			stepDetected = state.states[0];
 			signalPowerCutoff = state.states[1];
-			Log.d(TAG, "Coming "+stepDetected);
+			
 			float v = 0;
 
 			// draw convolution
