@@ -8,13 +8,13 @@
         android:minSdkVersion="8"
         android:targetSdkVersion="18" />
 
-	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS" />
-    
+
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
@@ -29,25 +29,29 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-		<activity
-            android:label="@string/app_name"
-            android:name="com.enable.navigator.StepDetection" >
+        <activity
+            android:name="com.enable.navigator.StepDetection"
+            android:label="@string/app_name" >
         </activity>
         <activity
-            android:label="@string/app_name"
-            android:name="com.enable.navigator.StepLog" >
+            android:name="com.enable.navigator.StepLog"
+            android:label="@string/app_name" >
         </activity>
         <activity
-            android:label="@string/app_name"
-            android:name="com.enable.navigator.Compass" >
+            android:name="com.enable.navigator.Compass"
+            android:label="@string/app_name" >
         </activity>
         <activity
-            android:label="@string/app_name"
-            android:name="com.enable.navigator.WifiDemo" >
+            android:name="com.enable.navigator.WifiDemo"
+            android:label="@string/app_name" >
         </activity>
         <activity
-            android:label="@string/app_name"
-            android:name="com.enable.navigator.Navigate" >
+            android:name="com.enable.navigator.Navigate"
+            android:label="@string/app_name" >
+        </activity>
+        <activity
+            android:name="com.enable.navigator.Library"
+            android:label="@string/title_activity_library" >
         </activity>
     </application>
 

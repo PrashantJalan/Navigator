@@ -24,13 +24,13 @@ import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.util.Log;
 
-public class Navigate extends Activity implements SensorEventListener {
+public class Library extends Activity implements SensorEventListener {
 	/** Tag string for our debug logs */
 	private static final String TAG = "Sensors";
 	private static final String TAG2 = "Navigate";
 
 	Point root;
-	GraphView view;
+	LibraryView view;
 	private SensorManager mSensorManager;
 	private Sensor mAccelerometer;
 	private Sensor mGeomagnetic;
@@ -221,7 +221,7 @@ public class Navigate extends Activity implements SensorEventListener {
 	    receiverWifi = new WifiReceiver();
 	    registerReceiver(receiverWifi, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
 	       
-	    view = new GraphView(this, nodeGrid);
+	    view = new LibraryView(this, nodeGrid);
 		setContentView(view);
 	}
 

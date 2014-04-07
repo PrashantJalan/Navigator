@@ -15,7 +15,9 @@ public class MainActivity extends DemoListActivity {
 
 		intents = new IntentPair[] {
 
-				new IntentPair("Working Prototype", new Intent(this,
+				new IntentPair("Library", new Intent(this,
+						Library.class)),
+				new IntentPair("Dead Reckoning", new Intent(this,
 						Navigate.class)),
 				new IntentPair("Step Detection", new Intent(this,
 						StepDetection.class)),
