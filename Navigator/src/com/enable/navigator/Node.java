@@ -1,5 +1,8 @@
 package com.enable.navigator;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /*
  * Node class for containing the Graph
  */
@@ -10,6 +13,7 @@ public class Node {
 	public String label = "empty";
 	Boolean active = false;
 	Boolean exists = true;
+	List<Integer> RSS = new ArrayList<Integer>();
 	
 	public double getDistance(Node node){
 		double dist = Math.sqrt((node.y - this.y)*(node.y - this.y) + (node.x - this.x)*(node.x - this.x));

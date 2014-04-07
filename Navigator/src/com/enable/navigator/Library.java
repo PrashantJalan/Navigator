@@ -1,5 +1,6 @@
 package com.enable.navigator;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.enable.dsp.filters.ContinuousConvolution;
@@ -59,6 +60,7 @@ public class Library extends Activity implements SensorEventListener {
     private int numRows; 
     public Node[][] nodeGrid;
     private Boolean wifiTriggered = true;
+    List<Integer> RSS;
 
 	private Sensor getSensor(int sensorType, String sensorName) {
 
@@ -163,7 +165,8 @@ public class Library extends Activity implements SensorEventListener {
 				
 				if (min < 2.0)	{
 					nodeGrid[root.x][root.y].active = false;
-					nodeGrid[newNode.x][newNode.y].active = true;
+					view.setActiveFalse(root.x, root.y);
+					view.setActiveTrue(newNode.x, newNode.y);
 					Log.d(TAG2, "Root node changed from "+root.toString()+" to "+newNode.toString());
 					root.x = newNode.x;
 					root.y = newNode.y;
@@ -187,21 +190,12 @@ public class Library extends Activity implements SensorEventListener {
 		// Be sure to call the super class.
 		super.onCreate(savedInstanceState);
 
-		//Making the graph
-		numColumns = (int) ((x_max / distance) + 1);
-	    numRows  = (int) ((y_max / distance) + 1);
-	    nodeGrid = new Node[numColumns][numRows];
-	    for (int i = 0; i<numColumns; i++){
-            for (int j = 0; j<numRows; j++){
-            	nodeGrid[i][j] = new Node();
-            	nodeGrid[i][j].x = i * distance;
-            	nodeGrid[i][j].y = j * distance;
-            }
-        }
+	    view = new LibraryView(this);
+	    nodeGrid = view.getGrid();
 	    root = new Point();
-    	root.x = 27;
-    	root.y = 16;
-    	nodeGrid[root.x][root.y].active = true;
+    	root.x = 48;
+    	root.y = 32;
+    	view.setActiveTrue(root.x, root.y);
 		System.out.println("Coming 5");
 		mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 		mAccelerometer = getSensor(Sensor.TYPE_ACCELEROMETER, "accelerometer");
@@ -221,7 +215,6 @@ public class Library extends Activity implements SensorEventListener {
 	    receiverWifi = new WifiReceiver();
 	    registerReceiver(receiverWifi, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
 	       
-	    view = new LibraryView(this, nodeGrid);
 		setContentView(view);
 	}
 
@@ -231,6 +224,13 @@ public class Library extends Activity implements SensorEventListener {
             //TODO when receive a wifi scan Result
         	wifiTriggered = true;
         	Log.d(TAG2, "Wifi Event triggered.");
+			RSS = new ArrayList<Integer>();
+			wifiList = mainWifi.getScanResults();
+			for(int i = 0; i < wifiList.size(); i++){
+			    if (wifiList.get(i).SSID=="iitk")	{
+			    	RSS.add(wifiList.get(i).level);
+			    }
+			}
         }
     }
     
